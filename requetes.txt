@@ -1,0 +1,111 @@
+
+mongosh "mongodb://barbaramase@mongodb.3wa.io:27017"
+
+
+
+//Compter les restaurants de Brooklyn en mongoDB
+db.restaurants.find({borough: "Brooklyn"}).count()
+
+//Compter les restaurant de Brooklyn en js (mongo est du JS)
+let count = 0;
+db.restaurants.find({borough: 'Brooklyn'}).forEach((doc) => count++);
+console.log(count)
+
+
+//Insérer un restaurant
+db.restaurants.insertOne({
+_id: ObjectId(45872563),
+name: "Freshly Burger", 
+street: "165 Farragut Road", 
+borough: "Brooklyn", 
+grades : [
+ 	{
+		date:  "03/04/2015",
+		grade: "A+",
+		score: 15,
+	}, 
+	{
+		date: "06/06/2021",
+		grade: "A++",
+		score: 18,
+	}
+]
+})
+
+//Afficher les noms des restaurants ayant déjà obtenu la note de 20
+db.restaurants.find({"grades.score": 20}, {_id: 0, name: 1, grades: 1});
+
+//Exercice 1 
+Combien y a t il de restaurants qui font de la cuisine italienne et qui ont eu un score de 10 au moins ?
+
+Affichez également le nom, les scores et les coordonnées GPS de ces restaurants. Ordonnez les résultats par ordre décroissant sur les noms des restaurants
+
+db.restaurants.find({$and : [{cuisine: "Italian"}, {"grades.score" : {$gt : 10}}]}, {_id: 0, name: 1, "grades.score": 1, coord: 1}).sort({name: 1});
+
+//Exercice 2
+Quels sont les restaurants qui ont eu un grade A et un score supérieur ou égal à 20 ?
+
+Affichez uniquement les noms et ordonnez les par ordre décroissant. Affichez le nombre de résultat.
+
+db.restaurants.find({$and : [{"grades.grade": "A"}, {"grades.score" : {$gte : 20}}]}, {_id: 0, name: 1}).sort({name: 1})
+
+//Exercice 3
+A l'aide de la méthode distinct trouvez tous les quartiers distincts de NY.
+db.restaurants.distinct("borough")
+
+//Exercice 4
+Trouvez tous les types de restaurants dans le quartiers du Bronx. Vous pouvez là encore utiliser distinct et un deuxième paramètre pour préciser sur quel ensemble vous voulez appliquer cette close.
+db.restaurants.distinct("cuisine", {borough: "Bronx"})
+
+//Exercice 5
+Trouvez tous les restaurants dans le quartier du Bronx qui ont eu 4 grades.
+db.restaurants.find({$and : [{borough: "Bronx"}, {grades : {$size : 4}}]});
+
+//Exercice 6
+Sélectionnez les restaurants dont le grade est A ou B dans le Bronx.
+db.restaurants.find({ $and : [{borough: "Bronx"}, { $or : [{"grades.grade" : "A"}, {"grades.grade" : "B"}]}]}, {_id: 0, name: 1})
+
+//Exercice 7 
+Même question mais, on aimerait récupérer les restaurants qui ont eu à la dernière inspection (elle apparaît théoriquement en premier dans la liste des grades) un A ou B. Vous pouvez utilisez la notion d'indice sur la clé grade :
+db.restaurants.find({$and : [{borough: "Bronx"}, {$or : [{"grades.0.grade": "A"}, {"grades.0.grade": "B"}]}]}, {_id: 0, name: 1});
+
+
+//Exercice 8
+Sélectionnez maintenant tous les restaurants qui ont le mot "Coffee" ou "coffee" dans la propriété name du document.
+
+Utilisez une RegEx : /[cC]offee/
+db.restaurants.find({name : /[cC]offee/}, {_id: 0, name: 1});
+
+//Exercice 9
+Même question mais uniquement dans le quartier du Bronx.
+db.restaurants.find({$and : [{borough: "Bronx"}, {name : /[cC]offee/}]}, {_id: 0, name: 1, borough: 1});
+
+//Exercice 10
+Trouvez tous les restaurants avec les mots Coffee ou Restaurant et qui ne contiennent pas le mot Starbucks. Puis, même question mais uniquement dans le quartier du Bronx.
+db.restaurants.find({$and: [{name: /[cC]offee/}, {name:{$not:/^Starbucks/}}, {borough: "Bronx"}]}, {_id: 0, name: 1, borough: 1})
+
+//Exercice 11
+Trouvez tous les restaurants qui ont dans leur nom le mot clé coffee, qui sont dans le bronx ou dans Brooklyn, qui ont eu exactement 4 appréciations (grades).
+db.restaurants.find({$and :[ {name : /[cC]offee/}, {$or : [{borough: "Bronx"}, {borough: "Brooklyn"}]}, {grades : {$size : 4}}]}, {_id: 0, name: 1, borough: 1, grades: 1});
+
+//Exercice 12
+Affichez la liste des restaurants dont le nom commence et se termine par une voyelle.
+db.restaurants.find({name: { $regex: /^[aeiouyAEIOUY].*[aeiouyAEIOUY]$/i}}, {_id: 0, name: 1});
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
